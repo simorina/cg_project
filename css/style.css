@@ -1,0 +1,88 @@
+
+body {
+  margin: 0;
+}
+.bigContainer{
+  width: 100%;
+  height: 100vh;
+  overflow-y: hidden;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.btn{
+  user-select: none;
+  width: 100%;
+  height: 100%;
+  font-size: 3em;
+}
+.container{
+  visibility: hidden;
+  width: 0%;
+  height: 0vh;
+  display: flex;
+  flex-direction: row-reverse;
+  
+}
+.inclinationContainer {
+
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.Movementcontainer{
+  background: rgba(1, 63, 1, 0.589);
+  width: 50%;
+  height: 100%;
+  display: grid; 
+  grid-auto-columns: 1fr; 
+  grid-auto-rows: 1fr; 
+  grid-template-columns: 1fr 1fr 1fr; 
+  grid-template-rows: 1fr 1fr 1fr; 
+  gap: 0px 0px; 
+  grid-template-areas: 
+    ". forward ."
+    "left . right"
+    ". behind ."; 
+}
+
+
+#btnW{
+  grid-area: forward;
+}
+
+#btnA{
+  grid-area: left;
+}
+
+
+#btnS{
+  grid-area: behind;
+}
+
+
+#btnD{
+  grid-area: right;
+}
+
+
+/* Tablet */
+@media only screen and (max-width: 768px) and (max-width: 1024px) {
+  .container{
+    visibility: visible;
+    width: 100%;
+    height: 30VH;
+    display: flex;
+    flex-direction: row-reverse;
+   
+  }
+  .bigContainer{
+    width: 100%;
+    height: 70vh;
+    overflow-y: visible;
+  }
+}

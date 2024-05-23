@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="bigContainer">
+      <canvas id="canvas"></canvas>
+      <div class="container">
+        <div class="inclinationContainer">
+          <button class="btn" id="btnF" data-key="f">down</button>
+          <button class="btn" id="btnG" data-key="g">up</button>
+        </div>
+        <div class="Movementcontainer">
+          <button class="btn" id="btnW" data-key="w">W</button>
+          <button class="btn" id="btnA" data-key="a">A</button>
+          <button class="btn" id="btnS" data-key="s">S</button>
+          <button class="btn" id="btnD" data-key="d">D</button>
+        </div>
+      </div>
+    </div>     
+    
+
+    
+
+<!-- vertex shader -->
+<script  id="vertex-shader-3d" type="x-shader/x-vertex">
+attribute vec4 a_position;
+varying vec4 v_position;
+void main() {
+  v_position = a_position;
+  gl_Position = a_position;
+  gl_Position.z = 1.0;
+}
+</script>
+<!-- fragment shader -->
+<script  id="fragment-shader-3d" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform samplerCube u_skybox;
+uniform mat4 u_viewDirectionProjectionInverse;
+
+varying vec4 v_position;
+void main() {
+  vec4 t = u_viewDirectionProjectionInverse * v_position;
+  gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+}
+</script>
+<script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+<script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
+<script src="resources/engine.js"></script>
+<script src="resources/app.js"></script>
+</body>
+</html>
