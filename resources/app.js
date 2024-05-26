@@ -1,15 +1,26 @@
-"use strict";
 
-// This is not a full .obj parser.
-// see http://paulbourke.net/dataformats/obj/
+
+//GLOBAL VARIABLES
+//settaggio camera
 let cameraX = 0
 let cameraY = 500
 let cameraZ = 0
+//definzione matrice della camera
 let camera = m4.identity()
+//trslazione camera
 m4.translate(camera,cameraX,cameraY,cameraZ,camera)
+//canvas
+var canvas;
+//gl
+var gl;
+//shader program degli oggetti
+var meshProgramInfo;
+//matrice del jet per trasformazioni
+var jetMatrix = m4.identity();
 
-
-
+//CODE FLOW
+main();
+"use strict";
 // function used to parse the .obj file representing the 3d model
 function parseOBJ(text) {
 	// because indices are base 1 let's just fill in the 0th data
@@ -183,6 +194,7 @@ function parseMapArgs(unparsedArgs) {
 	return unparsedArgs;
 }
 
+// funzione per il parsing del fil e.mtl del file .obj
 function parseMTL(text) {
 	const materials = {};
 	let material;
@@ -234,10 +246,12 @@ function parseMTL(text) {
 	return materials;
 }
 
+// funzione per controllare che l'immagine di dimensione potenza di 2.
 function isPowerOf2(value) {
 	return (value & (value - 1)) === 0;
 }
 
+//associazione del singolo pixel con la texture
 function create1PixelTexture(gl, pixel) {
 	const texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -245,7 +259,7 @@ function create1PixelTexture(gl, pixel) {
 		new Uint8Array(pixel));
 	return texture;
 }
-
+// metodo per la creazione texture
 function createTexture(gl, url) {
 	const texture = create1PixelTexture(gl, [128, 192, 255, 255]);
 	// Asynchronously load an image
@@ -271,7 +285,7 @@ function createTexture(gl, url) {
 	return texture;
 }
 
-
+//metodo per generare le tangenti per la normalMap/bumpMap
 function generateTangents(position, texcoord, indices) {
 	const getNextIndex = indices ? makeIndexIterator(indices) : makeUnindexedIterator(position);
 	const numFaceVerts = getNextIndex.numElements;
@@ -311,28 +325,28 @@ function generateTangents(position, texcoord, indices) {
 	return tangents;
   }
 
-  function makeIndexIterator(indices) {
-	let ndx = 0;
-	const fn = () => indices[ndx++];
-	fn.reset = () => { ndx = 0; };
-	fn.numElements = indices.length;
-	return fn;
-  }
+//metodo aggiuntivo per l'elaborazione della bumpMap
+function makeIndexIterator(indices) {
+let ndx = 0;
+const fn = () => indices[ndx++];
+fn.reset = () => { ndx = 0; };
+fn.numElements = indices.length;
+return fn;
+}
+//metodo aggiuntivo per l'elaborazione della bumpMap
+function makeUnindexedIterator(positions) {
+let ndx = 0;
+const fn = () => ndx++;
+fn.reset = () => { ndx = 0; };
+fn.numElements = positions.length / 3;
+return fn;
+}
   
-  function makeUnindexedIterator(positions) {
-	let ndx = 0;
-	const fn = () => ndx++;
-	fn.reset = () => { ndx = 0; };
-	fn.numElements = positions.length / 3;
-	return fn;
-  }
-  
-  const subtractVector2 = (a, b) => a.map((v, ndx) => v - b[ndx]);
+const subtractVector2 = (a, b) => a.map((v, ndx) => v - b[ndx]);
 
-
+//funzione per il caricamento del modello obj
 async function loadModel(path) {
 	const objHref = path;
-	// start==
 	const response = await fetch(objHref);
 	const text = await response.text();
 	const obj = parseOBJ(text);
@@ -349,7 +363,7 @@ async function loadModel(path) {
 		defaultNormal: create1PixelTexture(gl, [127, 127, 255, 0]),
 	};
 
-	// load texture for materials
+	// caricamento texture per il materiale
 	for (const material of Object.values(materials)) {
 		Object.entries(material)
 			.filter(([key]) => key.endsWith('Map'))
@@ -364,12 +378,9 @@ async function loadModel(path) {
 			});
 	}
 
-	// // hack the materials so we can see the specular map
-	// Object.values(materials).forEach(m => {
-	//   // m.shininess = 25;
-	//   // m.specular = [3, 2, 1];
-	// });
 
+	
+	//settaggio degli uniform di un materiale di default
 	const defaultMaterial = {
 		diffuse: [1, 1, 1],
 		diffuseMap: textures.defaultWhite,
@@ -386,8 +397,6 @@ async function loadModel(path) {
 	const parts = obj.geometries.map(({ material, data }) => {
 		if (data.color) {
 			if (data.position.length === data.color.length) {
-				// it's 3. The our helper library assumes 4 so we need
-				// to tell it there are only 3.
 				data.color = { numComponents: 3, data: data.color };
 			}
 		} else {
@@ -448,13 +457,7 @@ async function loadModel(path) {
 	//end==
 }
 
-//CODE FLOW
-main();
 
-//GLOBAL VARIABLES
-var canvas;
-var gl;
-var meshProgramInfo;
 
 //MAIN
 async function main() {
@@ -465,7 +468,7 @@ async function main() {
 	if (!gl) {
 		console.log("errore");
 	}
-
+	//vertex shader degli oggetti
 	const vs = `
 	attribute vec4 a_position;
 	attribute vec3 a_normal;
@@ -496,7 +499,7 @@ async function main() {
 	  v_color = a_color;
 	}
 	`;
-  
+	//fragment shader degli oggetti
 	const fs = `
 	precision highp float;
   
@@ -556,44 +559,22 @@ async function main() {
 	meshProgramInfo = webglUtils.createProgramInfo(gl, [vs, fs]);
 
 	var desert = await loadModel('models/desert/desert.obj')
-	var aereo = await loadModel('models/jet/13890_Spaceship_Ferry_v1_L3.obj')
+	var jet = await loadModel('models/jet/13890_Spaceship_Ferry_v1_L3.obj')
   	var cube = await loadModel('models/cubeMine/test_simo.obj')
 	var eiffelTower = await loadModel('models/eiffel/10067_Eiffel_Tower_v1_max2010_it1.obj')
 	var colosseum = await loadModel('models/colosseum/10064_colosseum_v1_Iteration0.obj')
 	
 
 
-	// figure out how far away to move the camera so we can likely
-	// see the object.
-	const radius = m4.length(aereo.range) * 5 ;
+	//settaggio visuale
+	const radius = m4.length(jet.range) * 5 ;
 	let cameraPosition = [cameraX, cameraY, cameraZ]
-	// Set zNear and zFar to something hopefully appropriate
-	// for the size of this object.
 	const zNear = radius / 100;
 	const zFar = radius * 3;
 
-
-	let lightPosition = [-1, 3, 10]; // Initial position of the light
-	const lightSpeed = 0.1; // Speed at which the light moves
-
-	// // Add event listener for keydown events
-	// document.addEventListener('keypress', (event) => {
-	//   const key = event.key.toLowerCase();
-	//   switch (key) {
-	//     case 'w':
-	//       lightPosition[1] += lightSpeed; // Move light upwards
-	//       break;
-	//     case 's':
-	//       lightPosition[1] -= lightSpeed; // Move light downwards
-	//       break;
-	//     case 'a':
-	//       lightPosition[0] -= lightSpeed; // Move light left
-	//       break;
-	//     case 'd':
-	//       lightPosition[0] += lightSpeed; // Move light right
-	//       break;
-	//   }
-	// });
+	//posizione della luce iniziale
+	let lightPosition = [-1, 3, 10]; 
+	//FOV 
 	let fieldOfViewRadians = degToRad(90);
   	
 	function render(time) {
@@ -601,13 +582,14 @@ async function main() {
 		
 		
 		
-		
+		//settaggio resize del canvas
 		webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+		//settaggio viewport
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		gl.enable(gl.DEPTH_TEST);
 
 
-		//aspect ration
+		//aspect ratio
 		const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 		//proiezione
 		const projection = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
@@ -617,38 +599,40 @@ async function main() {
 		const view = m4.inverse(camera);
 
 
-
+		// unfirom condfivisi nello shader
 		const sharedUniforms = {
 			u_lightDirection: m4.normalize([-1, 3, 10]),
 			u_view: view,
 			u_projection: projection,
 			u_viewWorldPosition: cameraPosition,
 		};
-
+		//uso dello shader program
 		gl.useProgram(meshProgramInfo.program);
 		sharedUniforms.u_lightDirection = m4.normalize(lightPosition),
-			// calls gl.uniform
-			webglUtils.setUniforms(meshProgramInfo, sharedUniforms);
+		//setting uniform gl.uniform
+		webglUtils.setUniforms(meshProgramInfo, sharedUniforms);
 
-
+		//copia della posizione della camera su una nuova u_world che sarà quella del jet
+		//CREAZIONE DI UN POV DEL JET
 		let u_world = m4.copy(camera);
-		
+		//traslazione del jet
 		u_world = m4.translate(u_world, 0, -100, -150)
-		
-		for (const { bufferInfo, material } of aereo.parts) {
-			// calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+
+		//caricamento del jet nel canvas e rendering
+		for (const { bufferInfo, material } of jet.parts) {
+			// chiamata gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
 			webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
-			// calls gl.uniform
+			// chiamata gl.uniform
 			webglUtils.setUniforms(meshProgramInfo, {
 				u_world,
 			}, material);
-			// calls gl.drawArrays or gl.drawElements
+			// chiamata gl.drawArrays or gl.drawElements
 			webglUtils.drawBufferInfo(gl, bufferInfo);
 		}
 		
 
 
-		//matrice deserto
+		// matrice deserto(terreno)
 		u_world = m4.identity();
 		// traslazione del deserto
 		m4.translate(u_world,0,100,0,u_world)
@@ -657,13 +641,13 @@ async function main() {
 		
 		//caricamento del modello finale
 		for (const { bufferInfo, material } of desert.parts) {
-			// calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+			// chiamata a gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
 			webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
-			// calls gl.uniform
+			// chiamata gl.uniform
 			webglUtils.setUniforms(meshProgramInfo, {
 				u_world,
 			}, material);
-			// calls gl.drawArrays or gl.drawElements
+			// chiamata gl.drawArrays o gl.drawElements
 			webglUtils.drawBufferInfo(gl, bufferInfo);
 		}
 
@@ -671,120 +655,84 @@ async function main() {
 		u_world = m4.identity()
 		//rotazione del cubo
 		m4.translate(u_world,-6000,1000,-400,u_world)
+		//rotazione costante nel tempo su Y
 		m4.yRotate(u_world,time,u_world)
-		
+		//scaling cubo
 		m4.scale(u_world,1000,1000,1000,u_world)
+		//rotazione cubo su X
 		m4.xRotate(u_world,degToRad(-90),u_world)
+		//caricamento del cubo nel programma e disegno
 		for (const { bufferInfo, material } of cube.parts) {
-			// calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+			// chiamata gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
 			webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
-			// calls gl.uniform
+			// chiamata gl.uniform
 			webglUtils.setUniforms(meshProgramInfo, {
 				u_world,
 			}, material);
-			// calls gl.drawArrays or gl.drawElements
+			// chiamata gl.drawArrays or gl.drawElements
 			webglUtils.drawBufferInfo(gl, bufferInfo);
 		}
 
 		
 
 		//caricamento della torrei eiffel
+		//ridefinizione matrice
 		u_world = m4.identity()
+		//traslazione torre
 		m4.translate(u_world,6000,200,0,u_world)
+		//scaling torre
 		m4.scale(u_world,0.1,0.1,0.1,u_world)
+		//rotazione torre
 		m4.xRotate(u_world,degToRad(-90),u_world)
+		//caricamento e disegno della torre
 		for (const { bufferInfo, material } of eiffelTower.parts) {
-			// calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+			// chiamata gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
 			webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
-			// calls gl.uniform
+			// chiamata gl.uniform
 			webglUtils.setUniforms(meshProgramInfo, {
 				u_world,
 			}, material);
-			// calls gl.drawArrays or gl.drawElements
+			// chiamata gl.drawArrays or gl.drawElements
 			webglUtils.drawBufferInfo(gl, bufferInfo);
 		}
 
 
-		//caricamento della torrei eiffel
+		//caricamento del colosseo
 		u_world = m4.identity()
+		//traslazione del colosseo
 		m4.translate(u_world,0,200,-5000,u_world)
+		//scaling del colosseo
 		m4.scale(u_world,0.1,0.1,0.1,u_world)
+		//rotazione del colosseo
 		m4.xRotate(u_world,degToRad(-90),u_world)
+		//caricamento e disegno del colosseo
 		for (const { bufferInfo, material } of colosseum.parts) {
-			// calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+			// chiamata gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
 			webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
-			// calls gl.uniform
+			// chiamata gl.uniform
 			webglUtils.setUniforms(meshProgramInfo, {
 				u_world,
 			}, material);
-			// calls gl.drawArrays or gl.drawElements
+			// chiamata gl.drawArrays or gl.drawElements
 			webglUtils.drawBufferInfo(gl, bufferInfo);
 		}
 		
 		
 		
-
+		
 		updateJetAndCameraPosition(5)
 		requestAnimationFrame(render);
 	}
 	requestAnimationFrame(render);
 }
-
-
-
-
-var jetMatrix = m4.identity();
-
-m4.scale(jetMatrix,500,500,500,jetMatrix)
-
-let r = 0
-
-let f=degToRad(1);
-let m = 250
-let wordX = 0
-let wordY = 0
-let wordZ = 100
-let angle=0
-// m4.translate(jetMatrix, wordX, wordY, wordZ, jetMatrix)
-			
-// document.addEventListener('keydown', (event) => {
-// 	switch (event.key.toLowerCase()) {
-// 		case 'w':
-// 			wordX+= 0.00001
-// 			m4.translate(camera, 0, 0, -10, camera)
-// 			m4.translate(jetMatrix, 0, 0, -10, jetMatrix)
-			
-// 			break;
-// 		case 's':
-// 			m4.yRotate(camera,degToRad(10),camera)
-// 			break;
-// 		case 'a':
-			
-// 			m4.yRotate(jetMatrix,degToRad(1),jetMatrix);
-			
-// 			m4.yRotate(camera,degToRad(1),camera);
-// 			m4.translate()
-				
-// 			break
-// 		case 'd':
-// 			m4.zRotate(jetMatrix, degToRad(-1), jetMatrix);
-// 			m4.translate(jetMatrix,10,0,0,jetMatrix)
-// 			m4.zRotate(camera, degToRad(-1), camera);
-// 			m4.translate(camera,10,0,0,camera)
-// 			break;
-// 		case 'ArrowUp':
-// 			m4.yRotate(camera,degToRad(-1),camera)
-// 			break;
-// 	}
-// });
-// ====== ^_ comandi modello _^ ======
-
-
+// funzione che converte gradi in radianti
 function degToRad(deg) {
 	return deg * Math.PI / 180;
 }
 
+//definzione oggetto con comandi per il movimento
 const keys = {
+	
 	w: false,
 	a: false,
 	s: false,
@@ -792,53 +740,48 @@ const keys = {
 	f: false,
 	g: false
   };
+
 // Add event listeners for keydown and keyup events
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
 
+//metoodo per controllare il pulsante premuto
 function handleKeyDown(event) {
   keys[event.key] = true;
 }
-
+//metoodo per controllare il pulsante rilasciato
 function handleKeyUp(event) {
   keys[event.key] = false;
 }
 
-var fwButton = document.getElementById("fw");
 
 
-// Event listeners per i bottoni direzionali
+// Event listeners per i bottoni direzionali per il mobile
 document.querySelectorAll(".btn").forEach(function(button) {
 	const keyCode = button.getAttribute("data-key");
 	
+	// pulsante premuto
 	button.addEventListener("touchstart", function(e) {
 	  keys[keyCode] = true;
 	  updateJetAndCameraPosition(5);
 	});
-
+	// pulsante rilasciato
 	button.addEventListener("touchend", function(e) {
 		keys[keyCode] = false;
 		updateJetAndCameraPosition(5);
 	  });
-	
-	button.addEventListener("mouseup", function(e) {
-	  keys[keyCode] = false;
-	  updateJetAndCameraPosition(5);
-	});
-  
-	button.addEventListener("mouseout", function(e) {
-	  keys[keyCode] = false;
-	  updateJetAndCameraPosition(5);
-	});
   });
 
+// funzione di rendering per spostare camera e jet
 function updateJetAndCameraPosition(velocity){
-	
+
+  //movimento in avanti
   if (keys['w']) {
     m4.translate(camera, 0, 0, -velocity, camera);
 	m4.translate(jetMatrix,0, 0, -velocity, jetMatrix);
 	
   }
+  //movimento a sinistra
   if (keys['a']) {
 	
 	m4.translate(camera, -velocity, 0, 0, camera);
@@ -849,13 +792,13 @@ function updateJetAndCameraPosition(velocity){
 	// m4.zRotate(camera,degToRad(0.4),camera)
 	
   }
+  //retromarcia
   if (keys['s']) {
     m4.translate(camera, 0, 0, velocity, camera);
 	m4.translate(jetMatrix,0, 0, velocity, jetMatrix);
   }
+  //movimento a destra
   if (keys['d']) {
-
-	
 	m4.translate(camera, velocity, 0, 0, camera);
 	m4.translate(jetMatrix,velocity, 0, 0, jetMatrix);
 	m4.yRotate(jetMatrix,-0.1,jetMatrix)
@@ -863,11 +806,13 @@ function updateJetAndCameraPosition(velocity){
 	// m4.zRotate(jetMatrix,degToRad(-0.4),jetMatrix)
 	// m4.zRotate(camera,degToRad(-0.4),camera)
   }
+  //guarda in basso
   if(keys['f']){
 	
 	m4.xRotate(jetMatrix,degToRad(-0.4),jetMatrix)
 	m4.xRotate(camera,degToRad(-0.4),camera)
   }
+  //guarda in alto
   if(keys['g']){
 	m4.xRotate(jetMatrix,degToRad(0.4),jetMatrix)
 	m4.xRotate(camera,degToRad(0.4),camera)
