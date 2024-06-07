@@ -1,23 +1,33 @@
 
-body {
+* {
   margin: 0;
+  
 }
+
+body{
+  background: black;
+}
+
 .bigContainer{
   width: 100%;
   height: 100vh;
+  background: red;
   overflow-y: hidden;
 }
+
 canvas {
   width: 100%;
   height: 100%;
   display: block;
 }
+
 .btn{
   user-select: none;
   width: 100%;
   height: 100%;
   font-size: 3em;
 }
+
 .container{
   visibility: hidden;
   width: 0%;
@@ -25,6 +35,27 @@ canvas {
   display: flex;
   flex-direction: row-reverse;
   
+}
+
+.infoContainer{
+  
+  display: flex;
+  flex-direction: column;
+  column-gap: 10px;
+  row-gap: 1em;
+  width: 95%;
+  margin-left: 5%;
+  height: 60vh;
+  background: transparent
+  
+}
+
+
+
+
+
+.sliderInput{
+  width: 30%;
 }
 .inclinationContainer {
 
@@ -65,24 +96,34 @@ canvas {
 }
 
 
+
 #btnD{
   grid-area: right;
 }
 
 
-/* Tablet */
+/* Tablet and smartphones */
 @media only screen and (max-width: 768px) and (max-width: 1024px) {
+  
   .container{
     visibility: visible;
     width: 100%;
-    height: 30VH;
+    height: 30vh;
     display: flex;
     flex-direction: row-reverse;
    
   }
   .bigContainer{
     width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .infoContainer{
+    margin: 0;
+    padding: 0;
+    width: 100%;
     height: 70vh;
-    overflow-y: visible;
+    background: black;
+  
   }
 }

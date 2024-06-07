@@ -1,13 +1,13 @@
 
 
-//GLOBAL VARIABLES
+//VARIABILI GLOBALI
 //settaggio camera
 let cameraX = 0
 let cameraY = 500
 let cameraZ = 0
 //definzione matrice della camera
 let camera = m4.identity()
-//trslazione camera
+//traslazione camera
 m4.translate(camera,cameraX,cameraY,cameraZ,camera)
 //canvas
 var canvas;
@@ -98,8 +98,6 @@ function parseOBJ(text) {
 			const objIndex = parseInt(objIndexStr);
 			const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i].length);
 			webglVertexData[i].push(...objVertexData[i][index]);
-			// if this is the position index (index 0) and we parsed
-			// vertex colors then copy the vertex colors to the webgl vertex color data
 			if (i === 0 && objColors.length > 1) {
 				geometry.data.color.push(...objColors[index]);
 			}
@@ -134,10 +132,8 @@ function parseOBJ(text) {
 				addVertex(parts[tri + 2]);
 			}
 		},
-		s: noop,    // smoothing group
+		s: noop,    
 		mtllib(parts, unparsedArgs) {
-			// the spec says there can be multiple filenames here
-			// but many exist with spaces in a single filename
 			materialLibs.push(unparsedArgs);
 		},
 		usemtl(parts, unparsedArgs) {
@@ -154,8 +150,10 @@ function parseOBJ(text) {
 		},
 	};
 
+	//regular expression per parsare il file obj
 	const keywordRE = /(\w*)(?: )*(.*)/;
 	const lines = text.split('\n');
+	//parsing effettivo del file
 	for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
 		const line = lines[lineNo].trim();
 		if (line === '' || line.startsWith('#')) {
@@ -204,7 +202,7 @@ function parseMTL(text) {
 			material = {};
 			materials[unparsedArgs] = material;
 		},
-
+		//parsing keyword dell'mtl ì
 		Ns(parts) { material.shininess = parseFloat(parts[0]); },
 		Ka(parts) { material.ambient = parts.map(parseFloat); },
 		Kd(parts) { material.diffuse = parts.map(parseFloat); },
@@ -213,13 +211,14 @@ function parseMTL(text) {
 		map_Ka(parts, unparsedArgs) { material.ambientMap = parseMapArgs(unparsedArgs); },
 		map_Kd(parts, unparsedArgs) { material.diffuseMap = parseMapArgs(unparsedArgs); },
 		map_Ns(parts, unparsedArgs) { material.specularMap = parseMapArgs(unparsedArgs); },
-		map_Bump(parts, unparsedArgs) { material.normalMap = parseMapArgs(unparsedArgs); },
+		map_bump(parts, unparsedArgs) { material.normalMap = parseMapArgs(unparsedArgs); },
 		Ni(parts) { material.opticalDensity = parseFloat(parts[0]); },
 		d(parts) { material.opacity = parseFloat(parts[0]); },
 		illum(parts) { material.illum = parseInt(parts[0]); },
 
 	};
 
+	//regex delle keyword
 	const keywordRE = /(\w*)(?: )*(.*)/;
 	const lines = text.split('\n');
 	for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
@@ -246,7 +245,7 @@ function parseMTL(text) {
 	return materials;
 }
 
-// funzione per controllare che l'immagine di dimensione potenza di 2.
+// funzione per controllare che l'immagine sia di dimensione potenza di 2.
 function isPowerOf2(value) {
 	return (value & (value - 1)) === 0;
 }
@@ -259,7 +258,7 @@ function create1PixelTexture(gl, pixel) {
 		new Uint8Array(pixel));
 	return texture;
 }
-// metodo per la creazione texture
+// metodo per la creazione della texture
 function createTexture(gl, url) {
 	const texture = create1PixelTexture(gl, [128, 192, 255, 255]);
 	// Asynchronously load an image
@@ -271,12 +270,12 @@ function createTexture(gl, url) {
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-		// Check if the image is a power of 2 in both dimensions.
+		
 		if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-			// Yes, it's a power of 2. Generate mips.
+			// Generazione mipmap.
 			gl.generateMipmap(gl.TEXTURE_2D);
 		} else {
-			// No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
+			// se non in potenza di 2 disattivo mipmnap e setto il wrapping a clamp to edge
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -285,7 +284,7 @@ function createTexture(gl, url) {
 	return texture;
 }
 
-//metodo per generare le tangenti per la normalMap/bumpMap
+//metodo per generare le tangenti per la normalMap
 function generateTangents(position, texcoord, indices) {
 	const getNextIndex = indices ? makeIndexIterator(indices) : makeUnindexedIterator(position);
 	const numFaceVerts = getNextIndex.numElements;
@@ -325,7 +324,7 @@ function generateTangents(position, texcoord, indices) {
 	return tangents;
   }
 
-//metodo aggiuntivo per l'elaborazione della bumpMap
+//metodo aggiuntivo per l'elaborazione della normalMap
 function makeIndexIterator(indices) {
 let ndx = 0;
 const fn = () => indices[ndx++];
@@ -333,7 +332,7 @@ fn.reset = () => { ndx = 0; };
 fn.numElements = indices.length;
 return fn;
 }
-//metodo aggiuntivo per l'elaborazione della bumpMap
+//metodo aggiuntivo per l'elaborazione della normalMap
 function makeUnindexedIterator(positions) {
 let ndx = 0;
 const fn = () => ndx++;
@@ -558,34 +557,79 @@ async function main() {
 	// compiles and links the shaders, looks up attribute and uniform locations
 	meshProgramInfo = webglUtils.createProgramInfo(gl, [vs, fs]);
 
+
+	/*INIZIO CARICAMENTO MODELLI*/
+
 	var desert = await loadModel('models/desert/desert.obj')
 	var jet = await loadModel('models/jet/13890_Spaceship_Ferry_v1_L3.obj')
   	var cube = await loadModel('models/cubeMine/test_simo.obj')
 	var eiffelTower = await loadModel('models/eiffel/10067_Eiffel_Tower_v1_max2010_it1.obj')
 	var colosseum = await loadModel('models/colosseum/10064_colosseum_v1_Iteration0.obj')
+	var cat = await loadModel('models/cat/12221_Cat_v1_l3.obj')
 	
+	/*FINE CARICAMENTO MODELLI*/
 
 
-	//settaggio visuale
+	//settaggio camera
+	//raggio camera
 	const radius = m4.length(jet.range) * 5 ;
+	//posizione camera
 	let cameraPosition = [cameraX, cameraY, cameraZ]
 	const zNear = radius / 100;
 	const zFar = radius * 3;
 
-	//posizione della luce iniziale
+	//definizione della posizione della luce
 	let lightPosition = [-1, 3, 10]; 
-	//FOV 
-	let fieldOfViewRadians = degToRad(90);
-  	
+	//settaggio testo per le co
+	document.getElementById('xValue').textContent = "X: " + lightPosition[0]
+	let xLight=document.getElementById('sliderLightX')
+	document.getElementById('yValue').textContent = "Y: " + lightPosition[1]
+	let yLight=document.getElementById('sliderLightY')
+	document.getElementById('zValue').textContent = "Z: " + lightPosition[2]
+	let zLight=document.getElementById('sliderLightZ')
+
+	//gestione slider posizione X della luce
+	xLight.addEventListener('input', function() {
+		lightPosition[0] = xLight.value
+		document.getElementById('xValue').textContent = 'X: ' + lightPosition[0]
+	});
+	//gestione slider posizione Y della luce
+	yLight.addEventListener('input', function() {
+		lightPosition[1] = yLight.value
+		document.getElementById('yValue').textContent = 'Y: ' + lightPosition[1]
+	});
+	//gestione slider posizione Z della luce
+	zLight.addEventListener('input', function() {
+		lightPosition[2] = zLight.value
+		document.getElementById('zValue').textContent = 'Z: ' + lightPosition[2]
+	});
+
+	
+	//slider per la gestione del fov
+	const slider = document.getElementById('slider');
+	//valore iniziale fov
+	let fieldOfViewRadians=degToRad(90);
+	//funzione modifica del fov
+	slider.addEventListener('input', function() {
+	  fieldOfViewRadians = degToRad(slider.value);
+	  document.getElementById('fovValue').textContent = slider.value + " degrees"
+	  
+	  
+	});
+
+	//settaggio del FOV (in radianti)
+	document.getElementById('fovValue').textContent = slider.value + " degrees"
+
+	//funzione di rendering
 	function render(time) {
-		time *= 0.001;  // convert to seconds
-		
-		
+		//conversione in secondi
+		time *= 0.001;  
 		
 		//settaggio resize del canvas
 		webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 		//settaggio viewport
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+		//test profondità
 		gl.enable(gl.DEPTH_TEST);
 
 
@@ -601,13 +645,14 @@ async function main() {
 
 		// unfirom condfivisi nello shader
 		const sharedUniforms = {
-			u_lightDirection: m4.normalize([-1, 3, 10]),
+			u_lightDirection: m4.normalize([lightPosition[0],lightPosition[1],lightPosition[2]]),
 			u_view: view,
 			u_projection: projection,
 			u_viewWorldPosition: cameraPosition,
 		};
 		//uso dello shader program
 		gl.useProgram(meshProgramInfo.program);
+		//settaggio direzione della luce
 		sharedUniforms.u_lightDirection = m4.normalize(lightPosition),
 		//setting uniform gl.uniform
 		webglUtils.setUniforms(meshProgramInfo, sharedUniforms);
@@ -716,10 +761,32 @@ async function main() {
 			// chiamata gl.drawArrays or gl.drawElements
 			webglUtils.drawBufferInfo(gl, bufferInfo);
 		}
+
+		//caricamento del cat
+		u_world = m4.identity()
+		//traslazione del cat
+		m4.translate(u_world,0,200,5000,u_world)
+		//scaling del colosseo
+		m4.scale(u_world,20,20,20,u_world)
+		//rotazione del colosseo
+		m4.xRotate(u_world,degToRad(-90),u_world)
+		m4.zRotate(u_world,degToRad(180),u_world)
+		//caricamento e disegno del colosseo
+		for (const { bufferInfo, material } of cat.parts) {
+			// chiamata gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+			webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
+			// chiamata gl.uniform
+			webglUtils.setUniforms(meshProgramInfo, {
+				u_world,
+			}, material);
+			// chiamata gl.drawArrays or gl.drawElements
+			webglUtils.drawBufferInfo(gl, bufferInfo);
+		}
 		
 		
 		
 		
+		//chiamata a funzione dell'aggiornamento della camera e del jet(POV sul jet)
 		updateJetAndCameraPosition(5)
 		requestAnimationFrame(render);
 	}
@@ -730,9 +797,8 @@ function degToRad(deg) {
 	return deg * Math.PI / 180;
 }
 
-//definzione oggetto con comandi per il movimento
+//definzione oggetto con comandi per il movimento del jet e della camera
 const keys = {
-	
 	w: false,
 	a: false,
 	s: false,
@@ -741,7 +807,7 @@ const keys = {
 	g: false
   };
 
-// Add event listeners for keydown and keyup events
+// aggiunta event listeners per eventi di pressione e rilascio del tasto
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
 
@@ -758,14 +824,15 @@ function handleKeyUp(event) {
 
 // Event listeners per i bottoni direzionali per il mobile
 document.querySelectorAll(".btn").forEach(function(button) {
+	//acquisizione comando
 	const keyCode = button.getAttribute("data-key");
 	
-	// pulsante premuto
+	// pulsante premuto(funziona sia per mobile che non)
 	button.addEventListener("touchstart", function(e) {
 	  keys[keyCode] = true;
 	  updateJetAndCameraPosition(5);
 	});
-	// pulsante rilasciato
+	// pulsante rilasciato(funziona sia per mobile che non)
 	button.addEventListener("touchend", function(e) {
 		keys[keyCode] = false;
 		updateJetAndCameraPosition(5);
@@ -784,37 +851,48 @@ function updateJetAndCameraPosition(velocity){
   //movimento a sinistra
   if (keys['a']) {
 	
+	//traslazione camera
 	m4.translate(camera, -velocity, 0, 0, camera);
+	//traslazione jet
 	m4.translate(jetMatrix,-velocity, 0, 0, jetMatrix);
+	//rotazione jet
 	m4.yRotate(jetMatrix,0.1,jetMatrix)
+	//rotazione camera
 	m4.yRotate(camera,0.1,camera)
-	// m4.zRotate(jetMatrix,degToRad(0.4),jetMatrix)
-	// m4.zRotate(camera,degToRad(0.4),camera)
+	
 	
   }
   //retromarcia
   if (keys['s']) {
+	//traslazione camera
     m4.translate(camera, 0, 0, velocity, camera);
+	//traslazione jet
 	m4.translate(jetMatrix,0, 0, velocity, jetMatrix);
   }
   //movimento a destra
   if (keys['d']) {
+	//traslazione camera
 	m4.translate(camera, velocity, 0, 0, camera);
+	//traslazione jet
 	m4.translate(jetMatrix,velocity, 0, 0, jetMatrix);
+	//rotazione jet
 	m4.yRotate(jetMatrix,-0.1,jetMatrix)
+	//rotazione camera
 	m4.yRotate(camera,-0.1,camera)
-	// m4.zRotate(jetMatrix,degToRad(-0.4),jetMatrix)
-	// m4.zRotate(camera,degToRad(-0.4),camera)
-  }
-  //guarda in basso
-  if(keys['f']){
 	
+  }
+  //inclina vista verso il basso
+  if(keys['f']){
+	//rotazione jet
 	m4.xRotate(jetMatrix,degToRad(-0.4),jetMatrix)
+	//rotazione camera
 	m4.xRotate(camera,degToRad(-0.4),camera)
   }
-  //guarda in alto
+ //inclina vista verso l'alto
   if(keys['g']){
+	//rotazione jet
 	m4.xRotate(jetMatrix,degToRad(0.4),jetMatrix)
+	//rotazione camera
 	m4.xRotate(camera,degToRad(0.4),camera)
   }
   

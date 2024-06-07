@@ -9,7 +9,7 @@ function main() {
     return;
   }
 
-  // setup GLSL program
+  // setup programma GLSL 
   var program = webglUtils.createProgramFromScripts(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
 
   // look up where the vertex data needs to go.
@@ -27,9 +27,13 @@ function main() {
   setGeometry(gl);
 
   // Create a texture.
+  //definzione texture
   var texture = gl.createTexture();
+  //operazione di binding della texture
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+  //url della texture
   let myUrl = './sky.jpg'
+  //facce della skybox
   const faceInfos = [
     {
       target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -56,10 +60,10 @@ function main() {
       url: myUrl,
     },
   ];
+
+  //settaggio formato di ogni faccia della skybox
   faceInfos.forEach((faceInfo) => {
     const {target, url} = faceInfo;
-
-    // Upload the canvas to the cubemap face.
     const level = 0;
     const internalFormat = gl.RGBA;
     const width = 2048;
@@ -67,45 +71,46 @@ function main() {
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
 
-    // setup each face so it's immediately renderable
+    // setup di ogni faccia così che siano renderizzabili immediatamente
     gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
 
-    // Asynchronously load an image
+    // Caricamento immagine in maniera asincrona
     const image = new Image();
+    //setting del source con l'url dell'immagine
     image.src = url;
     image.addEventListener('load', function() {
-      // Now that the image has loaded make copy it to the texture.
+      // binding immagine nella texture.
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+      // settaggio texture
       gl.texImage2D(target, level, internalFormat, format, type, image);
+      //generazione mipmap
       gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
     });
   });
+  //generazione mipmap
   gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+  //settaggio parametri texture
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 
-  function radToDeg(r) {
-    return r * 180 / Math.PI;
-  }
 
+  //funzione che converte gradi a radianti
   function degToRad(d) {
     return d * Math.PI / 180;
   }
 
+  //settaggio FOV
   var fieldOfViewRadians = degToRad(60);
-  var cameraYRotationRadians = degToRad(0);
 
-  var spinCamera = true;
-  // Get the starting time.
+  // tempo di inizio.
   var then = 0;
 
   requestAnimationFrame(drawScene);
 
-  // Draw the scene.
+  // funzione di rendering
   function drawScene(time) {
-    // convert to seconds
+    //conversione in secondi
     time *= 0.001;
-    // Subtract the previous time from the current time
-    var deltaTime = time - then;
+  
     // Remember the current time for the next frame.
     then = time;
 
@@ -114,67 +119,72 @@ function main() {
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+    //controllo del test di depth e cull
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
-    // Clear the canvas AND the depth buffer.
+    // pulizia canvasa e buffer del depth
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Tell it to use our program (pair of shaders)
+    //esecuzione shader program
     gl.useProgram(program);
 
-    // Turn on the position attribute
+    //attivazione dei position attribute
     gl.enableVertexAttribArray(positionLocation);
 
-    // Bind the position buffer.
+    // Binding del buffer delle posizioni.
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-    // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-    var size = 2;          // 2 components per iteration
-    var type = gl.FLOAT;   // the data is 32bit floats
-    var normalize = false; // don't normalize the data
-    var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    //esplico al poisiton attribute come estrappolare dati dal position buffer (ARRAY_BUFFER)
+    var size = 2;          // 2 componenti per iterazione
+    var type = gl.FLOAT;   // i dait sono 32bit floats
+    var normalize = false; // non normalizzare il dato
+    var stride = 0;        
     var offset = 0;        // start at the beginning of the buffer
     gl.vertexAttribPointer(
         positionLocation, size, type, normalize, stride, offset);
 
-    // Compute the projection matrix
+    // Computazione della matrice di proiezione
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var projectionMatrix =
         m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
 
-    // camera going in circle 2 units from origin looking at origin
+    // movimento rotatorio della camera
     var cameraPosition = [Math.cos(time * .01), 0, Math.sin(time * .01)];
+    // coordinate del target
     var target = [0, 0, 0];
+    // la camera sta leggermente in alto (y = 1)
     var up = [0, 1, 0];
-    // Compute the camera's matrix using look at.
+    // Computazione della matrice usando lookAt costruendo il vettore dove punta(ovvero target spostato di up)
     var cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
-    // Make a view matrix from the camera matrix.
+    // costruzione di una viewMatrix usando l'inverse sulla matrice della camera
     var viewMatrix = m4.inverse(cameraMatrix);
 
     // We only care about direciton so remove the translation
     viewMatrix[12] = 0;
     viewMatrix[13] = 0;
     viewMatrix[14] = 0;
-
+    
+    
     var viewDirectionProjectionMatrix =
         m4.multiply(projectionMatrix, viewMatrix);
     var viewDirectionProjectionInverseMatrix =
         m4.inverse(viewDirectionProjectionMatrix);
 
-    // Set the uniforms
+    // settaggio degli uniforms
     gl.uniformMatrix4fv(
         viewDirectionProjectionInverseLocation, false,
         viewDirectionProjectionInverseMatrix);
 
+      
     // Tell the shader to use texture unit 0 for u_skybox
     gl.uniform1i(skyboxLocation, 0);
 
     // let our quad pass the depth test at 1.0
     gl.depthFunc(gl.LEQUAL);
 
-    // Draw the geometry.
+    // disegno vero e proprio
     gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
 
     requestAnimationFrame(drawScene);
@@ -183,6 +193,7 @@ function main() {
 
 // Fill the buffer with the values that define a quad.
 function setGeometry(gl) {
+  //settaggio delle geometrie delle facce di un quadrata
   var positions = new Float32Array(
     [
       -1, -1,
@@ -192,6 +203,7 @@ function setGeometry(gl) {
        1, -1,
        1,  1,
     ]);
+  
   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 }
 

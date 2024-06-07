@@ -7,6 +7,20 @@
     <title>Document</title>
 </head>
 <body>
+    <div class="infoContainer">
+      <br><br><br>
+      <h1 style="color: white;">FOV slider</h1>
+      <input type="range" class="sliderInput"  min="60" max="100" value="90" step="1" id="slider">
+      <h2 style="color: white;" id="fovValue"></h2>
+      
+      <h1 style="color: white;">Light position settings</h1>
+      <h1 style="color: white;"  id="xValue"></h1>
+      <input type="range" class="sliderInput"  min="-1000" max="1000" value="-1" step="1" id="sliderLightX"><br>
+      <h1 style="color: white;" id="yValue"></h1>
+      <input type="range" class="sliderInput"  min="-1000" max="1000" value="3" step="1" id="sliderLightY"><br>
+      <h1 style="color: white;" id="zValue"></h1>
+      <input type="range" class="sliderInput"  min="-1000" max="1000" value="10" step="1" id="sliderLightZ"><br>
+    </div>
     <div class="bigContainer">
       <canvas id="canvas"></canvas>
       <div class="container">
