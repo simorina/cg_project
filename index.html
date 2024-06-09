@@ -4,15 +4,16 @@
     <link rel="stylesheet" href="css/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>CG Rinaldi Simone</title>
 </head>
 <body>
+
+    <!-- container contente informazione circa i settaggi della luce e del FOV con degli slider -->
     <div class="infoContainer">
       <br><br><br>
       <h1 style="color: white;">FOV slider</h1>
       <input type="range" class="sliderInput"  min="60" max="100" value="90" step="1" id="slider">
       <h2 style="color: white;" id="fovValue"></h2>
-      
       <h1 style="color: white;">Light position settings</h1>
       <h1 style="color: white;"  id="xValue"></h1>
       <input type="range" class="sliderInput"  min="-1000" max="1000" value="-1" step="1" id="sliderLightX"><br>
@@ -21,13 +22,18 @@
       <h1 style="color: white;" id="zValue"></h1>
       <input type="range" class="sliderInput"  min="-1000" max="1000" value="10" step="1" id="sliderLightZ"><br>
     </div>
+    <!-- container contente un sotto contianer, dove quest'ultimo è attuo alla gestione del posizionamento dei comandi di movimento  -->
     <div class="bigContainer">
+      <!-- canvas dove andiamo a a renderizzare il codice -->
       <canvas id="canvas"></canvas>
       <div class="container">
+        <!-- container contenente pulsanti per inclinazione del jet verso l'alto e verso il basso -->
         <div class="inclinationContainer">
           <button class="btn" id="btnF" data-key="f">down</button>
           <button class="btn" id="btnG" data-key="g">up</button>
         </div>
+
+        <!-- container contenente i pulsanti per il movimento -->
         <div class="Movementcontainer">
           <button class="btn" id="btnW" data-key="w">W</button>
           <button class="btn" id="btnA" data-key="a">A</button>
@@ -40,7 +46,7 @@
 
     
 
-<!-- vertex shader -->
+<!-- vertex shader skybox -->
 <script  id="vertex-shader-3d" type="x-shader/x-vertex">
 attribute vec4 a_position;
 varying vec4 v_position;
@@ -50,7 +56,7 @@ void main() {
   gl_Position.z = 1.0;
 }
 </script>
-<!-- fragment shader -->
+<!-- fragment shader skybox -->
 <script  id="fragment-shader-3d" type="x-shader/x-fragment">
 precision mediump float;
 

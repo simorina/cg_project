@@ -1,5 +1,6 @@
 "use strict";
 
+//definizone funzione main
 function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -206,5 +207,5 @@ function setGeometry(gl) {
   
   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 }
-
+//esecuzione del main
 main();

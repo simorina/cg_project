@@ -787,7 +787,7 @@ async function main() {
 		
 		
 		//chiamata a funzione dell'aggiornamento della camera e del jet(POV sul jet)
-		updateJetAndCameraPosition(5)
+		updateJetAndCameraPosition(2)
 		requestAnimationFrame(render);
 	}
 	requestAnimationFrame(render);
@@ -856,9 +856,9 @@ function updateJetAndCameraPosition(velocity){
 	//traslazione jet
 	m4.translate(jetMatrix,-velocity, 0, 0, jetMatrix);
 	//rotazione jet
-	m4.yRotate(jetMatrix,0.1,jetMatrix)
+	m4.yRotate(jetMatrix,0.05,jetMatrix)
 	//rotazione camera
-	m4.yRotate(camera,0.1,camera)
+	m4.yRotate(camera,0.05,camera)
 	
 	
   }
@@ -876,9 +876,9 @@ function updateJetAndCameraPosition(velocity){
 	//traslazione jet
 	m4.translate(jetMatrix,velocity, 0, 0, jetMatrix);
 	//rotazione jet
-	m4.yRotate(jetMatrix,-0.1,jetMatrix)
+	m4.yRotate(jetMatrix,-0.05,jetMatrix)
 	//rotazione camera
-	m4.yRotate(camera,-0.1,camera)
+	m4.yRotate(camera,-0.05,camera)
 	
   }
   //inclina vista verso il basso
