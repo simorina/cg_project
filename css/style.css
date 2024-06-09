@@ -127,7 +127,7 @@ canvas {
   }
 }
 
-@media screen and (orientation: landscape) {
+@media only screen and (max-height: 575.98px) and (orientation: landscape) {
   .container{
     visibility: visible;
     width: 80%;
@@ -136,7 +136,6 @@ canvas {
     height: 38vh;
     display: flex;
     flex-direction: row-reverse;
-   
   }
   .bigContainer{
     width: 100%;
