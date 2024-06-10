@@ -101,8 +101,8 @@ canvas {
 }
 
 
-/* Tablet and smartphones */
-@media only screen and (max-width: 768px) and (max-width: 1024px) {
+/* smartphones */
+@media only screen and (max-width: 768px)   {
   
   .container{
     visibility: visible;
@@ -130,9 +130,7 @@ canvas {
 @media only screen and (max-height: 575.98px) and (orientation: landscape) {
   .container{
     visibility: visible;
-    width: 80%;
-    margin-left: 10%;
-    margin-right: 10%;
+    width: 100%;
     height: 38vh;
     display: flex;
     flex-direction: row-reverse;
@@ -143,9 +141,7 @@ canvas {
   
   }
   canvas {
-    width: 80%;
-    margin-left: 10%;
-    margin-right: 10%;
+    width: 100%;
     height: 50%;
     display: block;
   }
@@ -171,6 +167,44 @@ canvas {
       ". forward ."
       "left . right"
       ". behind ."; 
+  }
+  .btn{
+    user-select: none;
+    width: 100%;
+    height: 100%;
+    font-size: 1.5em;
+  }
+}
+
+
+/*tablets*/
+@media only screen and (min-width: 769px)   {
+  
+  .container{
+    visibility: visible;
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: row-reverse;
+   
+  }
+  canvas {
+    width: 100%;
+    height: 50%;
+    display: block;
+  }
+  .bigContainer{
+    width: 100%;
+    height: 120vh;
+    overflow-y: auto;
+  }
+  .infoContainer{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 70vh;
+    background: black;
+  
   }
   .btn{
     user-select: none;

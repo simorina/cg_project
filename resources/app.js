@@ -787,7 +787,7 @@ async function main() {
 		
 		
 		//chiamata a funzione dell'aggiornamento della camera e del jet(POV sul jet)
-		updateJetAndCameraPosition(2)
+		updateJetAndCameraPosition(4)
 		requestAnimationFrame(render);
 	}
 	requestAnimationFrame(render);
