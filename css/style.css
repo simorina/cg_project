@@ -49,7 +49,7 @@ canvas {
   
 }
 
-
+#hintText{visibility: hidden;}
 
 
 
@@ -104,18 +104,27 @@ canvas {
 /* smartphones */
 @media only screen and (max-width: 768px)   {
   
+  body{
+    width: 100%;
+    height: auto;
+  }
   .container{
     visibility: visible;
     width: 100%;
-    height: 30vh;
+    height: 30%;
     display: flex;
     flex-direction: row-reverse;
-   
   }
+  canvas{
+    width: 100%;
+    height: 70%;
+  }
+
   .bigContainer{
     width: 100%;
     height: 100vh;
-    overflow-y: auto;
+    overflow-y: scroll;
+    margin-bottom: 15%;
   }
   .infoContainer{
     margin: 0;
@@ -131,7 +140,7 @@ canvas {
   .container{
     visibility: visible;
     width: 100%;
-    height: 38vh;
+    height: 30%;
     display: flex;
     flex-direction: row-reverse;
   }
@@ -140,21 +149,23 @@ canvas {
     height: 130vh;
   
   }
+  
   canvas {
     width: 100%;
-    height: 50%;
+    height: 70%;
     display: block;
   }
+ 
   .infoContainer{
     margin: 0;
     padding: 0;
     width: 100%;
     height: 200vh;
-    background: black;
+    background: red;
+  
   }
-
   .Movementcontainer{
-    background: rgba(1, 63, 1,1);
+    background: rgba(1, 63, 1, 0.589);
     width: 50%;
     height: 100%;
     display: grid; 
@@ -183,7 +194,7 @@ canvas {
   .container{
     visibility: visible;
     width: 100%;
-    height: 20%;
+    height: 40%;
     display: flex;
     flex-direction: row-reverse;
    
@@ -202,7 +213,7 @@ canvas {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 80vh;
+    height: 150vh;
     background: black;
   
   }
@@ -211,6 +222,18 @@ canvas {
     width: 100%;
     height: 100%;
     font-size: 1.5em;
+  }
+}
+
+@media only screen and (min-width:1368px) {
+  #hintText{visibility: visible;}
+  .infoContainer{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 90vh;
+    background: black;
+  
   }
 }
 
