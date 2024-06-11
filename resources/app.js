@@ -194,7 +194,6 @@ function parseOBJ(text) {
 }
 
 function parseMapArgs(unparsedArgs) {
-	// TODO: handle options
 	return unparsedArgs;
 }
 
@@ -417,11 +416,11 @@ async function loadModel(path) {
 		if (data.texcoord && data.normal) {
 			data.tangent = generateTangents(data.position, data.texcoord);
 		} else {
-			// There are no tangents
+			// non ci sono tangenti
 			data.tangent = { value: [1, 0, 0] };
 		}
 
-		// create a buffer for each array by calling
+		// creazione di un buffer per ogni array chiamando:
 		// gl.createBuffer, gl.bindBuffer, gl.bufferData
 		const bufferInfo = webglUtils.createBufferInfoFromArrays(gl, data);
 		return {

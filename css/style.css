@@ -5,13 +5,14 @@
 
 body{
   background: black;
+  overflow-x: hidden;
 }
 
 .bigContainer{
   width: 100%;
   height: 100vh;
   background: black;
-  overflow-y: hidden;
+  margin-bottom: 8%;
 }
 
 canvas {
@@ -42,8 +43,7 @@ canvas {
   flex-direction: column;
   column-gap: 10px;
   row-gap: 1em;
-  width: 95%;
-  margin-left: 5%;
+  width: 90%;
   height: 60vh;
   background: transparent
   
@@ -107,14 +107,15 @@ canvas {
   .container{
     visibility: visible;
     width: 100%;
-    height: 30vh;
+    height: 40vh;
     display: flex;
     flex-direction: row-reverse;
    
   }
   .bigContainer{
     width: 100%;
-    height: 100vh;
+    height: 110vh;
+    overflow-y: visible;
   }
   .infoContainer{
     margin: 0;
@@ -126,11 +127,15 @@ canvas {
   }
 }
 
-@media only screen and (max-height: 750px) and (orientation: landscape) {
+/*smartphone girato in landscape*/
+@media only screen and (max-height: 560px) and (orientation: landscape) {
+  body{
+    overflow-x: hidden;
+  }
   .container{
     visibility: visible;
     width: 100%;
-    height: 38vh;
+    height: 40vh;
     display: flex;
     flex-direction: row-reverse;
   }
@@ -139,35 +144,19 @@ canvas {
     height: 130vh;
   
   }
-
+ 
   canvas {
     width: 100%;
     height: 50%;
     display: block;
   }
   .infoContainer{
-    margin: 0;
-    padding: 0;
     width: 100%;
-    height: 130vh;
+    height: 170vh;
     background: black;
   }
 
-  .Movementcontainer{
-    background: rgba(1, 63, 1,1);
-    width: 50%;
-    height: 100%;
-    display: grid; 
-    grid-auto-columns: 1fr; 
-    grid-auto-rows: 1fr; 
-    grid-template-columns: 1fr 1fr 1fr; 
-    grid-template-rows: 1fr 1fr 1fr; 
-    gap: 0px 0px; 
-    grid-template-areas: 
-      ". forward ."
-      "left . right"
-      ". behind ."; 
-  }
+
   .btn{
     user-select: none;
     width: 100%;
@@ -178,8 +167,11 @@ canvas {
 
 
 /*tablets*/
-@media only screen and (min-width: 769px) and (max-width: 1368px){
-  
+@media only screen and (min-width: 900px) and (max-width: 1368px){
+  body{
+    overflow-x: hidden;
+  }
+
   .container{
     visibility: visible;
     width: 100%;
@@ -191,21 +183,21 @@ canvas {
   canvas {
     width: 100%;
     height: 50%;
-    display: block;
+  
   }
   .bigContainer{
     width: 100%;
-    height: 120vh;
-    overflow-y: auto;
+    height: 122vh;
   }
   .infoContainer{
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 80vh;
+    height: 100vh;
     background: black;
   
   }
+  
   .btn{
     user-select: none;
     width: 100%;
