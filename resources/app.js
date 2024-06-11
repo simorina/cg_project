@@ -55,8 +55,6 @@ function parseOBJ(text) {
 	const noop = () => { };
 
 	function newGeometry() {
-		// If there is an existing geometry and it's
-		// not empty then start a new one.
 		if (geometry && geometry.data.position.length) {
 			geometry = undefined;
 		}
@@ -107,8 +105,9 @@ function parseOBJ(text) {
 
 	// parsing e founding delle parole chiave nell'obj
 	const keywords = {
+		//parsing dei vertici(punti nello spazio 3D)
 		v(parts) {
-			// if there are more than 3 values here they are vertex colors
+		
 			if (parts.length > 3) {
 				objPositions.push(parts.slice(0, 3).map(parseFloat));
 				objColors.push(parts.slice(3).map(parseFloat));
@@ -116,13 +115,16 @@ function parseOBJ(text) {
 				objPositions.push(parts.map(parseFloat));
 			}
 		},
+		//parsing delle normali delle facce
 		vn(parts) {
 			objNormals.push(parts.map(parseFloat));
 		},
+		//parsing coorindate texture
 		vt(parts) {
-			// should check for missing v and extra w?
+			
 			objTexcoords.push(parts.map(parseFloat));
 		},
+		//parsing delle facce(come i veritici sono collegati)
 		f(parts) {
 			setGeometry();
 			const numTriangles = parts.length - 2;
@@ -132,18 +134,22 @@ function parseOBJ(text) {
 				addVertex(parts[tri + 2]);
 			}
 		},
+		//smooth shading
 		s: noop,    
 		mtllib(parts, unparsedArgs) {
 			materialLibs.push(unparsedArgs);
 		},
+		//specifica il materiale da applicare
 		usemtl(parts, unparsedArgs) {
 			material = unparsedArgs;
 			newGeometry();
 		},
+		//grouping --> raggruppamento facce correlate
 		g(parts) {
 			groups = parts;
 			newGeometry();
 		},
+		//nome dell'oggetto 3D
 		o(parts, unparsedArgs) {
 			object = unparsedArgs;
 			newGeometry();
@@ -395,18 +401,19 @@ async function loadModel(path) {
 		opacity: 1,
 	};
 
-	// parts interessante ========
+	//
 	const parts = obj.geometries.map(({ material, data }) => {
+		//se il colore è presente si applica il colore
 		if (data.color) {
 			if (data.position.length === data.color.length) {
 				data.color = { numComponents: 3, data: data.color };
 			}
 		} else {
-			// there are no vertex colors so just use constant white
+			// altrimenti si mette il colore bianco coem default
 			data.color = { value: [1, 1, 1, 1] };
 		}
 
-		 // generate tangents if we have the data to do so.
+		//se abbiamo i dati vengon generate le tangenti
 		if (data.texcoord && data.normal) {
 			data.tangent = generateTangents(data.position, data.texcoord);
 		} else {

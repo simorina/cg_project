@@ -104,43 +104,33 @@ canvas {
 /* smartphones */
 @media only screen and (max-width: 768px)   {
   
-  body{
-    width: 100%;
-    height: auto;
-  }
   .container{
     visibility: visible;
     width: 100%;
-    height: 30%;
+    height: 30vh;
     display: flex;
     flex-direction: row-reverse;
+   
   }
-  canvas{
-    width: 100%;
-    height: 70%;
-  }
-
   .bigContainer{
     width: 100%;
     height: 100vh;
-    overflow-y: scroll;
-    margin-bottom: 15%;
   }
   .infoContainer{
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 70vh;
+    height: 100vh;
     background: black;
   
   }
 }
 
-@media only screen and (max-height: 575.98px) and (orientation: landscape) {
+@media only screen and (max-height: 750px) and (orientation: landscape) {
   .container{
     visibility: visible;
     width: 100%;
-    height: 30%;
+    height: 38vh;
     display: flex;
     flex-direction: row-reverse;
   }
@@ -149,23 +139,22 @@ canvas {
     height: 130vh;
   
   }
-  
+
   canvas {
     width: 100%;
-    height: 70%;
+    height: 50%;
     display: block;
   }
- 
   .infoContainer{
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 200vh;
-    background: red;
-  
+    height: 130vh;
+    background: black;
   }
+
   .Movementcontainer{
-    background: rgba(1, 63, 1, 0.589);
+    background: rgba(1, 63, 1,1);
     width: 50%;
     height: 100%;
     display: grid; 
@@ -189,12 +178,12 @@ canvas {
 
 
 /*tablets*/
-@media only screen and (min-width: 769px) and (max-width: 1366px){
+@media only screen and (min-width: 769px) and (max-width: 1368px){
   
   .container{
     visibility: visible;
     width: 100%;
-    height: 40%;
+    height: 20%;
     display: flex;
     flex-direction: row-reverse;
    
@@ -213,7 +202,7 @@ canvas {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 150vh;
+    height: 80vh;
     background: black;
   
   }
