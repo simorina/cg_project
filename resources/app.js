@@ -21,15 +21,15 @@ var jetMatrix = m4.identity();
 //CODE FLOW
 main();
 "use strict";
-// function used to parse the .obj file representing the 3d model
+// funzione utilizzata per effettuare il parsing di un file .obj
 function parseOBJ(text) {
-	// because indices are base 1 let's just fill in the 0th data
+	
 	const objPositions = [[0, 0, 0]];
 	const objTexcoords = [[0, 0]];
 	const objNormals = [[0, 0, 0]];
 	const objColors = [[0, 0, 0]];
 
-	// same order as `f` indices
+
 	const objVertexData = [
 		objPositions,
 		objTexcoords,
@@ -37,7 +37,7 @@ function parseOBJ(text) {
 		objColors,
 	];
 
-	// same order as `f` indices
+	
 	let webglVertexData = [
 		[],   // positions
 		[],   // texcoords
@@ -105,7 +105,7 @@ function parseOBJ(text) {
 	}
 
 
-	// creazione dell'oggetto con
+	// parsing e founding delle parole chiave nell'obj
 	const keywords = {
 		v(parts) {
 			// if there are more than 3 values here they are vertex colors
@@ -202,12 +202,14 @@ function parseMTL(text) {
 			material = {};
 			materials[unparsedArgs] = material;
 		},
-		//parsing keyword dell'mtl ì
+		//parsing di ogni parametro tramite keyword del file .mtl(materiale dell'obj)
+		//se presente  parts.map(parseFloat); significa che è un valore
 		Ns(parts) { material.shininess = parseFloat(parts[0]); },
 		Ka(parts) { material.ambient = parts.map(parseFloat); },
 		Kd(parts) { material.diffuse = parts.map(parseFloat); },
 		Ks(parts) { material.specular = parts.map(parseFloat); },
 		Ke(parts) { material.emissive = parts.map(parseFloat); },
+		//se presente parseMapArgs(unparsedArgs) significa che è un vettore
 		map_Ka(parts, unparsedArgs) { material.ambientMap = parseMapArgs(unparsedArgs); },
 		map_Kd(parts, unparsedArgs) { material.diffuseMap = parseMapArgs(unparsedArgs); },
 		map_Ns(parts, unparsedArgs) { material.specularMap = parseMapArgs(unparsedArgs); },
@@ -236,7 +238,8 @@ function parseMTL(text) {
 			console.log(parts);
 		const handler = keywords[keyword];
 		if (!handler) {
-			console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
+			// warning nel caso non si gestisca un parametro dell'mtl
+			console.warn('unhandled keyword:', keyword);  
 			continue;
 		}
 		handler(parts, unparsedArgs);
@@ -275,7 +278,7 @@ function createTexture(gl, url) {
 			// Generazione mipmap.
 			gl.generateMipmap(gl.TEXTURE_2D);
 		} else {
-			// se non in potenza di 2 disattivo mipmnap e setto il wrapping a clamp to edge
+			// se non in potenza di 2 disattivo mipmap e setto il wrapping a clamp to edge
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -467,7 +470,7 @@ async function main() {
 	if (!gl) {
 		console.log("errore");
 	}
-	//vertex shader degli oggetti
+	//vertex shader dei modelli obj
 	const vs = `
 	attribute vec4 a_position;
 	attribute vec3 a_normal;
@@ -498,7 +501,7 @@ async function main() {
 	  v_color = a_color;
 	}
 	`;
-	//fragment shader degli oggetti
+	//fragment shader dei modelli obj
 	const fs = `
 	precision highp float;
   
@@ -554,17 +557,23 @@ async function main() {
 	`;
 
 
-	// compiles and links the shaders, looks up attribute and uniform locations
+	// compila e collega gli shaders
 	meshProgramInfo = webglUtils.createProgramInfo(gl, [vs, fs]);
 
 
 	/*INIZIO CARICAMENTO MODELLI*/
 
+	//caricamento modello del deserto
 	var desert = await loadModel('models/desert/desert.obj')
+	//caricamento modello del jet
 	var jet = await loadModel('models/jet/13890_Spaceship_Ferry_v1_L3.obj')
+	//caricamento del cubo
   	var cube = await loadModel('models/cubeMine/test_simo.obj')
+	//caricamento della torre eiffel
 	var eiffelTower = await loadModel('models/eiffel/10067_Eiffel_Tower_v1_max2010_it1.obj')
+	//caricamento del colosseo
 	var colosseum = await loadModel('models/colosseum/10064_colosseum_v1_Iteration0.obj')
+	//caricamento del gatto
 	var cat = await loadModel('models/cat/12221_Cat_v1_l3.obj')
 	
 	/*FINE CARICAMENTO MODELLI*/
@@ -576,7 +585,7 @@ async function main() {
 	//posizione camera
 	let cameraPosition = [cameraX, cameraY, cameraZ]
 	const zNear = radius / 100;
-	const zFar = radius * 3;
+	const zFar = radius * 4;
 
 	//definizione della posizione della luce
 	let lightPosition = [-1, 3, 10]; 
@@ -643,25 +652,32 @@ async function main() {
 		const view = m4.inverse(camera);
 
 
-		// unfirom condfivisi nello shader
+		// unfirom condivisi nello shader
 		const sharedUniforms = {
-			u_lightDirection: m4.normalize([lightPosition[0],lightPosition[1],lightPosition[2]]),
+			u_lightDirection: m4.normalize(lightPosition),
 			u_view: view,
 			u_projection: projection,
 			u_viewWorldPosition: cameraPosition,
 		};
+
 		//uso dello shader program
 		gl.useProgram(meshProgramInfo.program);
+
 		//settaggio direzione della luce
 		sharedUniforms.u_lightDirection = m4.normalize(lightPosition),
-		//setting uniform gl.uniform
+
+		//settaggio uniforms tramit webgl utils
 		webglUtils.setUniforms(meshProgramInfo, sharedUniforms);
 
 		//copia della posizione della camera su una nuova u_world che sarà quella del jet
-		//CREAZIONE DI UN POV DEL JET
+
+		//copia della matrice di spostamento della camera
 		let u_world = m4.copy(camera);
-		//traslazione del jet
+
+		//traslazione del jet per creare un offset ottenendo un POV7
+		// del jet da dietro
 		u_world = m4.translate(u_world, 0, -100, -150)
+
 
 		//caricamento del jet nel canvas e rendering
 		for (const { bufferInfo, material } of jet.parts) {
@@ -844,7 +860,9 @@ function updateJetAndCameraPosition(velocity){
 
   //movimento in avanti
   if (keys['w']) {
+	//traslazione su asse Z della camera
     m4.translate(camera, 0, 0, -velocity, camera);
+	//traslazione su asse Z del jet
 	m4.translate(jetMatrix,0, 0, -velocity, jetMatrix);
 	
   }
@@ -895,5 +913,4 @@ function updateJetAndCameraPosition(velocity){
 	//rotazione camera
 	m4.xRotate(camera,degToRad(0.4),camera)
   }
-  
 }

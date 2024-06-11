@@ -13,14 +13,14 @@ function main() {
   // setup programma GLSL 
   var program = webglUtils.createProgramFromScripts(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
 
-  // look up where the vertex data needs to go.
+  // ottengo la locazione dell'attribute a_position
   var positionLocation = gl.getAttribLocation(program, "a_position");
-  // lookup uniforms
+  // ottengo la locazione dell'uniform u_skybox
   var skyboxLocation = gl.getUniformLocation(program, "u_skybox");
   var viewDirectionProjectionInverseLocation =
       gl.getUniformLocation(program, "u_viewDirectionProjectionInverse");
 
-  // Create a buffer for positions
+  // Creazione buffer per le posizioni
   var positionBuffer = gl.createBuffer();
   // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -34,7 +34,7 @@ function main() {
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
   //url della texture
   let myUrl = './sky.jpg'
-  //facce della skybox
+  //vettore per le facce della skybox
   const faceInfos = [
     {
       target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -112,15 +112,15 @@ function main() {
     //conversione in secondi
     time *= 0.001;
   
-    // Remember the current time for the next frame.
+    // Ricordo il tempo corrente per il prossimo frame.
     then = time;
 
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
-    // Tell WebGL how to convert from clip space to pixels
+    // settaggio viewport
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    //controllo del test di depth e cull
+    // test di depth e cull
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
@@ -150,7 +150,7 @@ function main() {
     var projectionMatrix =
         m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
 
-    // movimento rotatorio della camera
+    // movimento rotatorio della skybox
     var cameraPosition = [Math.cos(time * .01), 0, Math.sin(time * .01)];
     // coordinate del target
     var target = [0, 0, 0];
@@ -167,9 +167,10 @@ function main() {
     viewMatrix[13] = 0;
     viewMatrix[14] = 0;
     
-    
+    // calcolo della direzione della matrice di proiezione
     var viewDirectionProjectionMatrix =
         m4.multiply(projectionMatrix, viewMatrix);
+    // calcolo della direzione della matrice di proiezione inversa
     var viewDirectionProjectionInverseMatrix =
         m4.inverse(viewDirectionProjectionMatrix);
 
@@ -179,10 +180,9 @@ function main() {
         viewDirectionProjectionInverseMatrix);
 
       
-    // Tell the shader to use texture unit 0 for u_skybox
+    // Lo  shaderusa texture unit 0 per u_skybox
     gl.uniform1i(skyboxLocation, 0);
 
-    // let our quad pass the depth test at 1.0
     gl.depthFunc(gl.LEQUAL);
 
     // disegno vero e proprio
@@ -194,7 +194,7 @@ function main() {
 
 // Fill the buffer with the values that define a quad.
 function setGeometry(gl) {
-  //settaggio delle geometrie delle facce di un quadrata
+  //settaggio della posizione delle facce di un cubo
   var positions = new Float32Array(
     [
       -1, -1,
