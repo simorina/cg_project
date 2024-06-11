@@ -5,14 +5,13 @@
 
 body{
   background: black;
-  overflow-x: hidden;
 }
 
 .bigContainer{
   width: 100%;
   height: 100vh;
   background: black;
-  margin-bottom: 8%;
+  overflow-y: hidden;
 }
 
 canvas {
@@ -43,13 +42,14 @@ canvas {
   flex-direction: column;
   column-gap: 10px;
   row-gap: 1em;
-  width: 90%;
+  width: 95%;
+  margin-left: 5%;
   height: 60vh;
   background: transparent
   
 }
 
-#hintText{visibility: hidden;}
+
 
 
 
@@ -107,35 +107,31 @@ canvas {
   .container{
     visibility: visible;
     width: 100%;
-    height: 40vh;
+    height: 30vh;
     display: flex;
     flex-direction: row-reverse;
    
   }
   .bigContainer{
     width: 100%;
-    height: 110vh;
-    overflow-y: visible;
+    height: 100vh;
+    overflow-y: auto;
   }
   .infoContainer{
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100vh;
+    height: 70vh;
     background: black;
   
   }
 }
 
-/*smartphone girato in landscape*/
-@media only screen and (max-height: 560px) and (orientation: landscape) {
-  body{
-    overflow-x: hidden;
-  }
+@media only screen and (max-height: 575.98px) and (orientation: landscape) {
   .container{
     visibility: visible;
     width: 100%;
-    height: 40vh;
+    height: 38vh;
     display: flex;
     flex-direction: row-reverse;
   }
@@ -144,19 +140,34 @@ canvas {
     height: 130vh;
   
   }
- 
   canvas {
     width: 100%;
     height: 50%;
     display: block;
   }
   .infoContainer{
+    margin: 0;
+    padding: 0;
     width: 100%;
-    height: 170vh;
+    height: 200vh;
     background: black;
   }
 
-
+  .Movementcontainer{
+    background: rgba(1, 63, 1,1);
+    width: 50%;
+    height: 100%;
+    display: grid; 
+    grid-auto-columns: 1fr; 
+    grid-auto-rows: 1fr; 
+    grid-template-columns: 1fr 1fr 1fr; 
+    grid-template-rows: 1fr 1fr 1fr; 
+    gap: 0px 0px; 
+    grid-template-areas: 
+      ". forward ."
+      "left . right"
+      ". behind ."; 
+  }
   .btn{
     user-select: none;
     width: 100%;
@@ -167,11 +178,8 @@ canvas {
 
 
 /*tablets*/
-@media only screen and (min-width: 900px) and (max-width: 1368px){
-  body{
-    overflow-x: hidden;
-  }
-
+@media only screen and (min-width: 769px) and (max-width: 1366px){
+  
   .container{
     visibility: visible;
     width: 100%;
@@ -183,38 +191,26 @@ canvas {
   canvas {
     width: 100%;
     height: 50%;
-  
+    display: block;
   }
   .bigContainer{
     width: 100%;
-    height: 122vh;
+    height: 120vh;
+    overflow-y: auto;
   }
   .infoContainer{
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100vh;
+    height: 80vh;
     background: black;
   
   }
-  
   .btn{
     user-select: none;
     width: 100%;
     height: 100%;
     font-size: 1.5em;
-  }
-}
-
-@media only screen and (min-width:1368px) {
-  #hintText{visibility: visible;}
-  .infoContainer{
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 90vh;
-    background: black;
-  
   }
 }
 
